@@ -1,0 +1,58 @@
+(Dans toute la suite, on travaille dans un terminal/Invite de commande)
+
+*** Bon à savoir lors de la création et de la manipulation des BDs Oracle ***
+
+* Oracle vient par défaut avec une BD (instance d'Oracle) nommée XE avec comme utilisateur principal system. 
+Et cet instance est largement suffisante pour stocker nos BDs
+
+* On s'y conencte via un terminal avec : 'sqlplus System/motDePasse@localhost:1521/XE'
+
+* Dans XE, tout se trouve depuis la version 19c, dans un conteneur (CDB) par défaut nommé CDB Root.
+
+* Dans ce CDB il y a par défaut un PDB (Pluggable) nommé PDB1. Les PDBs permettent de regrouper des BDs qui peuvent partager des ressources en commun;
+El il est préferrable de toujours créer les BDs dans les PDBs
+
+* Par défaut il est conseillé pour un début de travailler dans le PDB1 et on s'y connecte via : 'ALTER SESSION SET CONTAINER = PDB1'
+
+* C'est maintenant là qu'on peut créer pour un début ses BDs ou pour plutôt dire ses utilisateurs, car chez Oracle, une BD au sens traditionnel de MySQL est équivalent à un utilisateur
+
+* On crée un nouvel utilisateur (BD) avec : 'CREATE USER nomBD IDENTIFIED BY password;'
+
+* Ensuite il faut accorder ces privilèges à la BD pour lui permettre de faire le necessaire, à savoir :
+
+    -- Permet à l'utilisateur de pouvoir faire autant d'insertion que possible dans ses tables 
+    ALTER USER Library QUOTA UNLIMITED ON USERS;
+
+    -- Pour les permissions de créations de procédures stockées
+    GRANT CREATE PROCEDURE TO Library;
+
+* Une fois l'utilisateur (BD) créé, il faut le choisir en faisant : ALTER SESSION SET CURRENT_SCHEMA = nomBD; 
+
+* Après les requetes de creation et d'insertion des tables dans la BD créée sont quasiment les mêmes qu'en MySQL
+
+*** Bon à savoir lors de la connection à une BD Oracle dans une machine en réseau local***
+
+* Il est souhaitable de connecter les deux machines via un partage de connection hospot d'un téléphone tiers.
+
+* Utiliser la commande ipconfig sur la machine hôte (celle qui a la BD), pour avoir son adresse ipconfig
+
+* Dans le cas où la machine qui veut faire l'accès à Oracle, il lui suffit juste d'entrer : sqlplus System/motDePasse@adresseIPMachineHote:1521/XE
+    - Dans le cas où il y a une erreur timeout, il faut regarder les autorisations du réseau dans le parefeu et au pire des cas le desactiver même
+    - Dans la cas où il y a une erreur 'ORA-12638: Credential retrieval failed', il faut aller dans 'C:\app\kapoi\product\21c\homes\OraDB21Home1\network\admin\sqlnet.ora' et remplacer 'SQLNET.AUTHENTICATION_SERVICES= (NTS)' par 'SQLNET.AUTHENTICATION_SERVICES= (NONE);
+
+(Pour ceux qui veulent plus de performance et d'efficacité, je conseille d'utiliser l'extension 'mysql de weijan chen' de vs code')
+
+(
+    La connection via Java se fait toujours avec le JDBC téléchargé cette fois ci dans le site d'Oracle
+    L'intitulé de Connection (url) devient juste "jdbc:oracle:thin:@localhost:1521/XE"
+    Notez localhost désigne la BD locale ; mais pour une BD sur une autre machine il faudra remplacer localhost par l'adresseIP de la dite machine
+
+)
+
+*** Bon à savoir pour vérifier la connectivité réseau à une BD Oracle ***
+
+* ping adressIP : pour verifier si on peut accéder en réseau à la machine hôte
+
+* tnsping adressIP:1521/XE : pour vérifier si de l'exterieur on peut avoir accès à la BD
+
+* lsnrctl status : pour connaitre si le status du listener d'Oracle sur la machine hôte
